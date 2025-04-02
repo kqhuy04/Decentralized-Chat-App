@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Chat App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        #connectButton { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Decentralized Chat App</h1>
+    <button id="connectButton" onclick="connectMetaMask()">Connect MetaMask</button>
+    <p>Địa chỉ ví: <span id="account"></span></p>
+    <div>
+        <input id="recipient" type="text" placeholder="Địa chỉ người nhận" style="width: 300px;">
+        <input id="content" type="text" placeholder="Tin nhắn" style="width: 300px;">
+        <button onclick="sendMessage()">Gửi</button>
+    </div>
+    <div>
+        <input id="fetchRecipient" type="text" placeholder="Địa chỉ để lấy tin nhắn" style="width: 300px;">
+        <button onclick="getMessages()">Lấy tin nhắn</button>
+    </div>
+    <h3>Tin nhắn:</h3>
+    <div id="messages"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
