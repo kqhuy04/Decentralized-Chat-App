@@ -4,27 +4,306 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Decentralized Chat App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
-        #connectButton { margin-bottom: 10px; }
+        :root {
+            --primary: #0084ff;
+            --background: linear-gradient(135deg, #f0f2f5, #e4e6eb);
+            --chat-bg: #fff;
+            --text: #050505;
+            --subtext: #65676b;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] {
+            --primary: #0a84ff;
+            --background: linear-gradient(135deg, #18191a, #242526);
+            --chat-bg: #242526;
+            --text: #e4e6eb;
+            --subtext: #b0b3b8;
+            --shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--text);
+            transition: all 0.3s;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100%;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .sidebar {
+            width: 360px;
+            background: var(--chat-bg);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .sidebar-header {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .sidebar-header h2 {
+            font-size: 24px;
+            margin: 0;
+            background: linear-gradient(45deg, var(--primary), #00ff84);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #connectButton {
+            background: linear-gradient(45deg, var(--primary), #00ff84);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #connectButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,132,255,0.4);
+        }
+        #connectButton:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+        .wallet-info {
+            font-size: 14px;
+            color: var(--subtext);
+            padding: 15px;
+            word-break: break-all;
+        }
+        .conversation-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        .conversation-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .conversation-item:hover {
+            background: rgba(0,132,255,0.1);
+            transform: translateX(5px);
+        }
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 15px;
+            transition: transform 0.3s;
+        }
+        .conversation-item:hover .avatar {
+            transform: scale(1.1);
+        }
+        .unread-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            right: 15px;
+        }
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chat-bg);
+            box-shadow: var(--shadow);
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .chat-header h3 {
+            margin: 0;
+            font-size: 18px;
+            background: linear-gradient(45deg, var(--primary), #00ff84);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chat-header span {
+            font-size: 12px;
+            color: var(--subtext);
+            margin-left: 15px;
+        }
+        .messages {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            animation: messageAppear 0.3s ease-out;
+        }
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.sent {
+            align-items: flex-end;
+        }
+        .message.received {
+            align-items: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 15px;
+            position: relative;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+        .message.sent .message-content {
+            background: linear-gradient(45deg, var(--primary), #00ff84);
+            color: white;
+        }
+        .message.received .message-content {
+            background: rgba(0,0,0,0.05);
+            color: var(--text);
+        }
+        .message-content:hover {
+            transform: translateY(-2px);
+        }
+        .message-actions {
+            position: absolute;
+            top: -10px;
+            right: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+        .message-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .message-time {
+            font-size: 12px;
+            color: var(--subtext);
+            margin-top: 5px;
+        }
+        .message-status {
+            font-size: 11px;
+            color: var(--subtext);
+        }
+        .message-input {
+            padding: 25px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            background: var(--chat-bg);
+        }
+        #recipient, #content {
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 25px;
+            margin-right: 15px;
+            font-size: 15px;
+            background: var(--chat-bg);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+        #recipient:focus, #content:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(0,132,255,0.3);
+        }
+        #recipient {
+            width: 220px;
+        }
+        #content {
+            flex-grow: 1;
+        }
+        .message-input button {
+            background: linear-gradient(45deg, var(--primary), #00ff84);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .message-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,132,255,0.4);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 120px;
+            }
+            .sidebar-header h2, .wallet-info {
+                font-size: 16px;
+            }
+            #recipient {
+                width: 150px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Decentralized Chat App</h1>
-    <button id="connectButton" onclick="connectMetaMask()">Connect MetaMask</button>
-    <p>Địa chỉ ví: <span id="account"></span></p>
-    <div>
-        <input id="recipient" type="text" placeholder="Địa chỉ người nhận" style="width: 300px;">
-        <input id="content" type="text" placeholder="Tin nhắn" style="width: 300px;">
-        <button onclick="sendMessage()">Gửi</button>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Chats</h2>
+                <div>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                    <button id="connectButton" onclick="connectMetaMask()">Connect MetaMask</button>
+                </div>
+            </div>
+            <div class="wallet-info">Wallet: <span id="account"></span></div>
+            <div class="conversation-list" id="conversationList"></div>
+        </div>
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3 id="chatRecipient">Select a conversation</h3>
+                <span id="recipientAddress"></span>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="message-input">
+                <input id="recipient" type="text" placeholder="Recipient Address">
+                <input id="content" type="text" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
     </div>
-    <div>
-        <input id="fetchRecipient" type="text" placeholder="Địa chỉ để lấy tin nhắn" style="width: 300px;">
-        <button onclick="getMessages()">Lấy tin nhắn</button>
-    </div>
-    <h3>Tin nhắn:</h3>
-    <div id="messages"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="app.js"></script>
