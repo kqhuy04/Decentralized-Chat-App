@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat&family=Source+Code+Pro:wght@200&display=swap");
+
+.home {
+  background: url(../public//assets/background.png);
+  background-position: center;
+  background-size: cover;
+  z-index: 1;
+}
+
+.dark .three-d {
+  text-shadow: 0px 5px 0px #533519;
+}
+
+.three-d {
+  text-shadow: none;
+}
+
+.overflow-y-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.overflow-y-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
