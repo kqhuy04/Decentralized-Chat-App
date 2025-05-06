@@ -3,18 +3,33 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/output.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./public/output.css --watch",
+    "start": "http-server ./public"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.19"
+    "autoprefixer": "^10.4.17",
+    "hardhat": "^2.22.19",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
   },
   "dependencies": {
+    "@helia/core": "^0.0.0",
+    "@helia/http": "^2.0.5",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "type": "commonjs"
 }

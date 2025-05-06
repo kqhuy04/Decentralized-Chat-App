@@ -1,16 +1,16 @@
 const hre = require("hardhat");
 
 async function main() {
-  // Lấy factory của hợp đồng Chat
+  // Get the Chat contract factory
   const Chat = await hre.ethers.getContractFactory("Chat");
   
-  // Triển khai hợp đồng
+  // Deploy the contract
   const chat = await Chat.deploy();
   
-  // Không cần gọi deployed() nữa, nhưng có thể chờ giao dịch hoàn tất nếu muốn
-  await chat.waitForDeployment(); // Thay vì chat.deployed()
+  // Wait for deployment to complete
+  await chat.waitForDeployment();
   
-  console.log("Chat contract deployed to:", chat.target); // Thay vì chat.address
+  console.log("Chat contract deployed to:", chat.target);
 }
 
 main().catch((error) => {
